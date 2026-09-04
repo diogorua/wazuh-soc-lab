@@ -60,12 +60,12 @@ Wrote this report aiming to perform a complete investigation based on threats th
 <p align="center">
   <img src="images/Captura_de_ecra_2026-09-02_as_22.51.12.png" alt="Windows FIM Alert" width="75%" />
 </p>
+        
         - Linux:
 
 <p align="center">
   <img src="images/Captura_de_ecra_2026-09-02_as_22.52.03.png" alt="Linux FIM Alert" width="75%" />
 </p>
----
 
 ## Investigation Summary (What happened)
 

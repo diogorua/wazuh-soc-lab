@@ -56,17 +56,15 @@ Wrote this report aiming to perform a complete investigation based on threats th
 - **Detection Controls & Active Response Validation:** Implementation of File Integrity Monitoring (**FIM**), custom detection rules (`local_rules.xml`), and dynamic containment via Wazuh Active Response (`firewall-drop` via `iptables`).
     - **FIM**: verified real-time integrity alerts for file creation, modification, and deletion across monitored directories on both Windows and Linux endpoints.
         - Windows:
-        
+
 <p align="center">
   <img src="images/Captura_de_ecra_2026-09-02_as_22.51.12.png" alt="Windows FIM Alert" width="75%" />
 </p>
-        
         - Linux:
-    
+
 <p align="center">
   <img src="images/Captura_de_ecra_2026-09-02_as_22.52.03.png" alt="Linux FIM Alert" width="75%" />
 </p>
-
 ---
 
 ## Investigation Summary (What happened)

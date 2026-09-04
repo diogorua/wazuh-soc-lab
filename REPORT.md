@@ -7,6 +7,7 @@ Wrote this report aiming to perform a complete investigation based on threats th
 ## Findings (What did i find)
 
 - **System Discovery Activities (MITRE T1033 / T1016 / T1087 / T1018):** Execution of standard enumeration commands across both Windows and Linux endpoints (`whoami`, `ipconfig /all`, `net user`, `net localgroup administrators`, `ip a`).
+<br>
 
 - **Default Accounts and Account Manipulation (MITRE T1078.001 / T1098):** The default disabled local `Guest/Convidado` account was enabled (`/active:yes`) and assigned a new password.
 
@@ -15,57 +16,62 @@ Wrote this report aiming to perform a complete investigation based on threats th
 </p>
 
 <p align="center">
-  <img src="images/Captura_de_ecra_2026-09-02_as_21.08.40.png" alt="Guest Account Enabled Verification" width="70%" />
+  <img src="images/Captura_de_ecra_2026-09-02_as_21.08.40.png" alt="Guest Account Enabled Verification" width="50%" />
 </p>
 
 <p align="center">
-  <img src="images/Captura_de_ecra_2026-09-02_as_21.18.20.png" alt="Wazuh Alert Guest Account" width="75%" />
+  <img src="images/Captura_de_ecra_2026-09-02_as_21.18.20.png" alt="Wazuh Alert Guest Account" width="35%" />
 </p>
 
 <p align="center">
-  <img src="images/Captura_de_ecra_2026-09-02_as_21.18.26.png" alt="Wazuh Alert Event Details" width="75%" />
+  <img src="images/Captura_de_ecra_2026-09-02_as_21.18.26.png" alt="Wazuh Alert Event Details" width="30%" />
 </p>
+<br>
 
 - **Local Account Creation, Privilege Escalation & Account Access Removal (MITRE T1136.001 / T1098 / T1531):** A user account (`student1`) was created, added to the local `Administrators` group, and subsequently deleted.
     
 <p align="center">
-  <img src="images/Captura_de_ecra_2026-09-02_as_21.37.33.png" alt="Account Manipulation Events" width="75%" />
+  <img src="images/Captura_de_ecra_2026-09-02_as_21.37.33.png" alt="Account Manipulation Events" width="45%" />
 </p>
+<br>
 
 - **Sensitive File Access & Local Data Staging (MITRE T1552.001 / T1074.001):** Inspection of `/etc/passwd` on the Linux target and redirection of its content to a staging file (`/tmp/loot.txt`).
     - Direct command execution on Linux bypassed process telemetry due to lack of `auditd` system call monitoring. However, the resulting artifact was captured as a file addition event via File Integrity Monitoring (FIM Rule 554).
     
 <p align="center">
-  <img src="images/Captura_de_ecra_2026-09-03_as_11.20.16.png" alt="FIM Alert /tmp/loot.txt" width="75%" />
+  <img src="images/Captura_de_ecra_2026-09-03_as_11.20.16.png" alt="FIM Alert /tmp/loot.txt" width="45%" />
 </p>
 
 <p align="center">
   <img src="images/Captura_de_ecra_2026-09-03_as_11.20.23.png" alt="FIM Event Payload Details" width="75%" />
 </p>
+<br>
 
 - **SSH Brute-Force and Password Guessing (MITRE T1110.001):** Interactive SSH session via account `diogofilipe` followed by multiple failed password attempts.
 
 <p align="center">
-  <img src="images/Captura_de_ecra_2026-09-02_as_22.18.14.png" alt="SSH Logon Failure Log" width="70%" />
+  <img src="images/Captura_de_ecra_2026-09-02_as_22.18.14.png" alt="SSH Logon Failure Log" width="50%" />
 </p>
 
 <p align="center">
-  <img src="images/Captura_de_ecra_2026-09-02_as_22.18.21.png" alt="Consecutive SSH Authentication Failures" width="70%" />
+  <img src="images/Captura_de_ecra_2026-09-02_as_22.18.21.png" alt="Consecutive SSH Authentication Failures" width="30%" />
 </p>
+<br>
 
 - **Detection Controls & Active Response Validation:** Implementation of File Integrity Monitoring (**FIM**), custom detection rules (`local_rules.xml`), and dynamic containment via Wazuh Active Response (`firewall-drop` via `iptables`).
     - **FIM**: verified real-time integrity alerts for file creation, modification, and deletion across monitored directories on both Windows and Linux endpoints.
         - Windows:
 
-<p align="center">
-  <img src="images/Captura_de_ecra_2026-09-02_as_22.51.12.png" alt="Windows FIM Alert" width="75%" />
-</p>
+        <p align="center">
+          <img src="images/Captura_de_ecra_2026-09-02_as_22.51.12.png" alt="Windows FIM Alert" width="75%" />
+        </p>
         
         - Linux:
 
-<p align="center">
-  <img src="images/Captura_de_ecra_2026-09-02_as_22.52.03.png" alt="Linux FIM Alert" width="75%" />
-</p>
+        <p align="center">
+          <img src="images/Captura_de_ecra_2026-09-02_as_22.52.03.png" alt="Linux FIM Alert" width="75%" />
+        </p>
+<br>
 
 ## Investigation Summary (What happened)
 
@@ -77,6 +83,7 @@ Wrote this report aiming to perform a complete investigation based on threats th
     - `Guest` (Reactivated and modified).
     - `student1` (Temporary local administrator created and deleted).
     - `diogofilipe` (Target account for SSH brute-force validation).
+<br>
 
 ### What (What happened?)
 
@@ -86,29 +93,30 @@ Wrote this report aiming to perform a complete investigation based on threats th
 4. **Detection Engineering & Automated Mitigation:**
     - Custom rule deployed to alert on `Guest`/`Convidado` account activation.
     
-<p align="center">
-  <img src="images/Captura_de_ecra_2026-09-03_as_14.18.05.png" alt="Wazuh Custom Rule Guest Activation" width="85%" />
-</p>
+    <p align="center">
+      <img src="images/Captura_de_ecra_2026-09-03_as_14.18.05.png" alt="Wazuh Custom Rule Guest Activation" width="85%" />
+    </p>
     
     - Timeframe-based correlation rule created for SSH brute-force (3 failures in 120s using `<if_matched_sid>5710</if_matched_sid>` and `<same_source_ip />`).
     
-<p align="center">
-  <img src="images/Captura_de_ecra_2026-09-03_as_14.19.16.png" alt="Wazuh Correlation Rule SSH Brute-Force" width="85%" />
-</p>
+    <p align="center">
+      <img src="images/Captura_de_ecra_2026-09-03_as_14.19.16.png" alt="Wazuh Correlation Rule SSH Brute-Force" width="85%" />
+    </p>
     
     - Active Response triggered `firewall-drop`, applying dynamic `iptables` drop rules against the offensive IP.
     
-<p align="center">
-  <img src="images/Captura_de_ecra_2026-09-03_as_14.25.16.png" alt="Active Response Configuration" width="85%" />
-</p>
-    
-<p align="center">
-  <img src="images/Captura_de_ecra_2026-09-03_as_14.21.29.png" alt="Active Response Execution Alert" width="75%" />
-</p>
-    
-<p align="center">
-  <img src="images/Captura_de_ecra_2026-09-03_as_14.30.40.png" alt="Iptables Firewall Rules Applied" width="75%" />
-</p>
+  <p align="center">
+    <img src="images/Captura_de_ecra_2026-09-03_as_14.25.16.png" alt="Active Response Configuration" width="45%" />
+  </p>
+      
+  <p align="center">
+    <img src="images/Captura_de_ecra_2026-09-03_as_14.21.29.png" alt="Active Response Execution Alert" width="45%" />
+  </p>
+      
+  <p align="center">
+    <img src="images/Captura_de_ecra_2026-09-03_as_14.30.40.png" alt="Iptables Firewall Rules Applied" width="45%" />
+  </p>
+<br>
 
 ### When (When did this occur and is it still happening?)
 
@@ -119,28 +127,32 @@ Wrote this report aiming to perform a complete investigation based on threats th
 - **Status:** Contained and resolved. Offensive traffic was dropped by Active Response, verified by ICMP ping timeouts.
 
 <p align="center">
-  <img src="images/Captura_de_ecra_2026-09-02_as_22.18.33.png" alt="Terminal ICMP Request Timeout" width="65%" />
+  <img src="images/Captura_de_ecra_2026-09-02_as_22.18.33.png" alt="Terminal ICMP Request Timeout" width="45%" />
 </p>
 
 <p align="center">
-  <img src="images/Captura_de_ecra_2026-09-02_as_22.18.51.png" alt="Connectivity Dropped Verification" width="65%" />
+  <img src="images/Captura_de_ecra_2026-09-02_as_22.18.51.png" alt="Connectivity Dropped Verification" width="30%" />
 </p>
+<br>
 
 ### Where (Where in the environment did this happen?)
 
 - **Windows Endpoint:** Virtual Machine (`192.168.158.131`).
 - **Linux Endpoint:** Ubuntu Server Virtual Machine (`192.168.158.130`).
 - **Central Monitoring:** Wazuh SIEM Manager.
+<br>
 
 ### Why (Why did this happen?)
 
 - Controlled adversary emulation exercise designed to evaluate SIEM visibility, validate custom ruleset efficacy, and verify automated threat containment via Active Response.
+<br>
 
 ### How (How did this happen?)
 
 - Leveraged native OS tools (*Living off the Land* binaries such as `cmd.exe`, `powershell.exe`, `net.exe`, native `ssh` client) and standard Linux shell utilities.
 
 ---
+<br>
 
 ## Recommendations
 
